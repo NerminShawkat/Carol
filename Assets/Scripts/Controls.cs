@@ -7,11 +7,11 @@ public class Controls : MonoBehaviour {
     
     public float secondsToDie = 3;// if the player didn't change the shoes befor 3 sec he slows down and die
     int Ground = -1; // the default ground -- to bereplaced by enum
-    private Animator anim;
+    public Animator anim;
     public ShoeChanger LeftShoeChanger;// changes the left  shoe
     public ShoeChanger RightShoeChanger;// changes the right  shoe
-    bool Done = false;
-
+    bool IsDieRunning = false;// is Die Coroutine Running?
+    bool IsWinRunning = false;
     void Start()
     {
 
@@ -19,17 +19,20 @@ public class Controls : MonoBehaviour {
 
     public void Reset()
     {
-        StopAllCoroutines();
+        IsWinRunning = false;
+        IsDieRunning = false;
+        GameMan.Done = false;
         anim = GetComponent<Animator>();
+        StopAllCoroutines();
         transform.position = new Vector3(0, transform.position.y, transform.position.z);
         RightShoeChanger.Reset();
         LeftShoeChanger.Reset();
-        Done = false;
-        anim.SetTrigger("Reset");
-        Camera.main.GetComponent<Animator>().SetTrigger("Reset");
+        
+        //anim.SetTrigger("Start");
     }
 	void Update () {
-        if (!Done) { //if the player still didn't finish the level
+        if (!GameMan.Done)
+        { //if the player still didn't finish the level
             if (GameMan.Died )//stop the level if died
                 LevelMan.activeLevel.Stop();
 
@@ -61,6 +64,7 @@ public class Controls : MonoBehaviour {
             {
                 ChangeShose();
             }
+            //anim.SetBool("Reset", false);
 	    }
 	}
 
@@ -81,11 +85,13 @@ public class Controls : MonoBehaviour {
     }
     void Jump()
     {
-        anim.SetTrigger("Jump");
+        if (anim.GetCurrentAnimatorStateInfo(0).IsName("RUN00_F")) 
+            anim.SetTrigger("Jump");
     }
     void Slide()
     {
-        anim.SetTrigger("Slide");
+        if (anim.GetCurrentAnimatorStateInfo(0).IsName("RUN00_F")) 
+            anim.SetTrigger("Slide");
     }
     void ChangeShose()
     {
@@ -104,55 +110,53 @@ public class Controls : MonoBehaviour {
         if(Other.gameObject.tag == "Normal")
         {
             ground = -1;
-            //print("Normal");
         }
 
         else if (Other.gameObject.tag == "Ice")
         {
             ground = 0;
-            //print("Ice");
-
         }
         else if (Other.gameObject.tag == "Forest")
         {
             ground = 1;
-            //print("Forest");
-
         }
         else if (Other.gameObject.tag == "Desert")
         {
             ground = 2;
-            //print("Desert");
+        }
 
-        }
-        else if (Other.tag == "Done")
+
+        else if (Other.tag == "Done" && !IsWinRunning)
         {
-            Done = true;
+            GameMan.Done = true;
             StartCoroutine(Win());
-            print("Done");
         }
-        if (ground != Ground && !Done)
+        if (ground != Ground && !GameMan.Done)
         {
             Ground = ground;
-            if (!LeftShoeChanger.IsTheRightShoe(Ground))//if they are,nt the same die
-                StopAllCoroutines();
+            if (!LeftShoeChanger.IsTheRightShoe(Ground) && !IsDieRunning)//if they are,nt the same die
+                
                 StartCoroutine(Die());
         }
         
     }
     IEnumerator Win()
     {
+        IsWinRunning = true;
         GameMan.levelManager.SetDoneCurrent();
         LevelMan.activeLevel.Stop();
         anim.SetTrigger("Done");
         Camera.main.GetComponent<Animator>().SetTrigger("Done");
-        yield return new WaitForSeconds(5);
+        yield return new WaitForSeconds(10);
         GameMan.uiManager.ShowMap();
+        
     }
     IEnumerator Die()
     {
+        IsDieRunning = true;
         yield return new WaitForSeconds(secondsToDie);
         GameMan.Died = true;
+        IsDieRunning = false;
         
     }
 }

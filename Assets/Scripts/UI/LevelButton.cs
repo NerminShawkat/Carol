@@ -14,8 +14,6 @@ public class LevelButton : MonoBehaviour {
     void Update()
     {
         btn.interactable = GameMan.levelManager.IsUnlocked(LevelNum);
-        print("Level " + LevelNum + (GameMan.levelManager.IsUnlocked(LevelNum) ? " Unlocked" : " not Unlocked yet"));
-        print("Level " + LevelNum + (GameMan.levelManager.IsDone(LevelNum) ? " Done" : " not Done yet"));
         if (GameMan.levelManager.IsDone(LevelNum))
         {
             btnImage.color = Color.green;

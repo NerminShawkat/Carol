@@ -15,7 +15,7 @@ public class UIMan : MonoBehaviour {
         {
             Application.Quit();
         }
-        if (GameMan.inputManager.ChangeShose)
+        if (GameMan.inputManager.ChangeShose && !GameMan.Done && !GameMan.Died)
         {
             hudComponent.ChangeShoesImages();
         }
@@ -26,10 +26,13 @@ public class UIMan : MonoBehaviour {
 	}
     public void ShowMap()
     {
+        GameMan.inputManager.enabled = false;
         Destroy(LevelMan.activeLevelgameObject);
         HUD.SetActive(false);
         controls.enabled = false;
         Map.SetActive(true);
+        Camera.main.GetComponent<Animator>().SetTrigger("Reset");
+        controls.anim.SetTrigger("Reset");
         GameMan.Died = false;
     }
     public void Play()
@@ -47,6 +50,7 @@ public class UIMan : MonoBehaviour {
 
         GameMan.levelManager.LoadLevel(LevelNum);
         controls.enabled = true;
+        GameMan.inputManager.enabled = true;
         controls.Reset();
     }
     
